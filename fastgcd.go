@@ -91,11 +91,16 @@ func get_results() {
     input_nums:= input_file("p0.txt")
     modded_nums:= input_file("r0.txt")
     results := []int{}
+    vulnerable := []int{}
     for i := 0; i < len(input_nums); i++ {
         div_num := modded_nums[i]/input_nums[i]
-        results = append(results, GCD(div_num, input_nums[i]))
+        gcd := GCD(div_num, input_nums[i])
+        if (gcd != 1) {
+            vulnerable = append(vulnerable, input_nums[i])
+        }
+        results = append(results, gcd)
     }
-    fmt.Println(results)
+    output_file("vulnerable.txt", vulnerable)
     output_file("results.txt", results)
 }
 
