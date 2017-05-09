@@ -87,7 +87,26 @@ func remainder_tree(level int){
     }
 }
 
+func get_results() {
+    input_nums:= input_file("p0.txt")
+    modded_nums:= input_file("r0.txt")
+    results := []int{}
+    for i := 0; i < len(input_nums); i++ {
+        div_num := modded_nums[i]/input_nums[i]
+        results = append(results, GCD(div_num, input_nums[i]))
+    }
+    fmt.Println(results)
+    output_file("results.txt", results)
+}
+
+func GCD(a, b int) int {
+    for b != 0 {
+        a, b = b, a%b
+    }
+    return a
+}
+
 func main() {
-	
     remainder_tree(product_tree())
+    get_results()
 }
