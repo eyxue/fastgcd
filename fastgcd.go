@@ -4,7 +4,7 @@ import ("fmt"
  		"bufio"
  		"os"
  		"strconv"
- 		//"math"
+ 	
  		
 )
 
@@ -31,22 +31,26 @@ func input_file (filename string) []int {
     return output
 }
 
+func output_file(level_filename string, inputs []int) {
+    f, err := os.Create(level_filename)
+    if err != nil {
+        fmt.Println(err)
+    }
+    defer f.Close()
+    w := bufio.NewWriter(f)
+    for _, line := range inputs {
+        content := strconv.Itoa(line) + "\r\n" 
+        fmt.Fprint(w, content)
+    }
+    w.Flush()
+}
+
 func product_tree() int{
 	inputs := input_file("input.txt")
 	level := 0
 	for len(inputs) > 0 {
 		level_filename := fmt.Sprintf("p%d.txt", level)
-		f, err := os.Create(level_filename)
-		if err != nil {
-        	fmt.Println(err)
-    	}
-    	defer f.Close()
-    	w := bufio.NewWriter(f)
-    	for _, line := range inputs {
-    		content := strconv.Itoa(line) + "\r\n" 
-    		fmt.Fprint(w, content)
-    	}
-    	w.Flush()
+		output_file(level_filename, inputs)
     	if len(inputs) == 1{
     		inputs = []int{}
     	} else{
@@ -65,21 +69,25 @@ func product_tree() int{
 	return level
 }
 
-// func remainder_tree(level int){
-// 	input:= input_file(fmt.Sprintf("p%d.txt", level))
-// 	for level > 0 {
-//     level = level - 1;
-//     input_bin_array(&v, name);
-
-//     void mul_job(int i) {
-//       mpz_t s;
-//       mpz_init(s);
-//       mpz_mul(s, v.el[i], v.el[i]);
-//       mpz_mod(v.el[i], P.el[i/2], s);
-//       mpz_clear(s);
-//     }
-// }
+func remainder_tree(level int){
+	current_level:= input_file(fmt.Sprintf("p%d.txt", level))
+	for level > 0 {
+        level = level - 1;
+        next_level := input_file(fmt.Sprintf("p%d.txt", level));
+        output_level := []int{}
+        for i := 0; i < len(current_level); i++ {
+            output_level = append(output_level, current_level[i] % (next_level[2*i] * next_level[2*i]))
+            if 2*i + 1 != len(next_level) {
+                output_level = append(output_level, current_level[i] % (next_level[2*i + 1] * next_level[2*i + 1]))
+            }
+        }
+        level_filename := fmt.Sprintf("r%d.txt", level)
+        output_file(level_filename, output_level)
+        current_level = output_level
+    }
+}
 
 func main() {
-	product_tree()
+	
+    remainder_tree(product_tree())
 }
