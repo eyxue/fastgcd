@@ -26,7 +26,7 @@ func input_file (filename string) []big.Int {
     	}
         newnum := new(big.Int)
         newnum.SetString(text, 16)
-        fmt.Println(newnum)
+        // fmt.Println(newnum)
         output = append(output, *newnum)
     }
 
@@ -51,7 +51,7 @@ func output_file(level_filename string, inputs []big.Int) {
 }
 
 func product_tree() int{
-	inputs := input_file("input.txt")
+	inputs := input_file("input2.txt")
 	level := 0
 	for len(inputs) > 0 {
 		level_filename := fmt.Sprintf("p%d.txt", level)
@@ -110,28 +110,16 @@ func get_results() {
     for i := 0; i < len(input_nums); i++ {
         div_num := new(big.Int)
         div_num.Div(&modded_nums[i], &input_nums[i])
-        gcd := GCD(*div_num, input_nums[i])
+        gcd := new(big.Int)
+        gcd.GCD(nil, nil, div_num, &input_nums[i])
         one := big.NewInt(1)
-        // log.Debug(one)
-        fmt.Print(one)
-        fmt.Print(*one)
-        // one.setInt(1)
-        if (one.Cmp(&gcd)!=0) {
+        if (one.Cmp(gcd)!=0) {
             vulnerable = append(vulnerable, input_nums[i])
         }
-        results = append(results, gcd)
+        results = append(results, *gcd)
     }
     output_file("vulnerable.txt", vulnerable)
     output_file("results.txt", results)
-}
-
-func GCD(a, b big.Int) big.Int {
-    zero := big.NewInt(0)
-    mod := new(big.Int)
-    for (zero.Cmp(&b) != 0) {
-        a, b = b, *(mod.Mod(&a, &b))
-    }
-    return a
 }
 
 func main() {
