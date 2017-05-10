@@ -6,10 +6,11 @@ import (
 	"os"
 	// "strconv"
  	"math/big"
+    // "time"
     // "log"
 )
 
-func input_file (filename string) []big.Int {
+func input_file (filename string, encoding int) []big.Int {
 	output := []big.Int{}
 	file, err := os.Open(filename)
     if err != nil {
@@ -25,7 +26,7 @@ func input_file (filename string) []big.Int {
         	fmt.Println(err)
     	}
         newnum := new(big.Int)
-        newnum.SetString(text, 16)
+        newnum.SetString(text, encoding)
         // fmt.Println(newnum)
         output = append(output, *newnum)
     }
@@ -51,7 +52,8 @@ func output_file(level_filename string, inputs []big.Int) {
 }
 
 func product_tree() int{
-	inputs := input_file("input2.txt")
+    // start := time.Now()
+	inputs := input_file("input2.txt", 16)
 	level := 0
 	for len(inputs) > 0 {
 		level_filename := fmt.Sprintf("p%d.txt", level)
@@ -73,14 +75,15 @@ func product_tree() int{
 		level = level + 1
 		}
 	}
+    // fmt.Printf("time spent on product_tree = %d " , time.Since(start).Nanoseconds())
 	return level
 }
 
 func remainder_tree(level int){
-	current_level:= input_file(fmt.Sprintf("p%d.txt", level))
+	current_level:= input_file(fmt.Sprintf("p%d.txt", level), 10)
 	for level > 0 {
         level = level - 1;
-        next_level := input_file(fmt.Sprintf("p%d.txt", level));
+        next_level := input_file(fmt.Sprintf("p%d.txt", level), 10);
         output_level := []big.Int{}
         for i := 0; i < len(current_level); i++ {
             sq := new(big.Int)
@@ -103,8 +106,8 @@ func remainder_tree(level int){
 }
 
 func get_results() {
-    input_nums:= input_file("p0.txt")
-    modded_nums:= input_file("r0.txt")
+    input_nums:= input_file("p0.txt", 10)
+    modded_nums:= input_file("r0.txt", 10)
     results := []big.Int{}
     vulnerable := []big.Int{}
     for i := 0; i < len(input_nums); i++ {
