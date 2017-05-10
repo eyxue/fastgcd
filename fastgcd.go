@@ -1,16 +1,19 @@
 package main
 
+
 import ("fmt"
  		"bufio"
  		"os"
- 		"strconv"
  	    "time"
         "sync"
+        "math/big"
+        )
  		
-)
 
-func input_file (filename string) []int {
-	output := []int{}
+
+
+func input_file (filename string) []big.Int {
+	output := []big.Int{}
 	file, err := os.Open(filename)
     if err != nil {
         fmt.Println(err)
@@ -19,11 +22,15 @@ func input_file (filename string) []int {
 
     scanner := bufio.NewScanner(file)
     for scanner.Scan() {
-        line, err := strconv.Atoi(scanner.Text())
+        text := scanner.Text()
+        // line, err:= strconv.Atoi(text)
         if err != nil {
         	fmt.Println(err)
     	}
-        output = append(output, line)
+        newnum := new(big.Int)
+        newnum.SetString(text, 16)
+        fmt.Println(newnum)
+        output = append(output, *newnum)
     }
 
     if err := scanner.Err(); err != nil {
@@ -32,7 +39,7 @@ func input_file (filename string) []int {
     return output
 }
 
-func output_file(level_filename string, inputs []int) {
+func output_file(level_filename string, inputs []big.Int) {
     f, err := os.Create(level_filename)
     if err != nil {
         fmt.Println(err)
@@ -40,7 +47,7 @@ func output_file(level_filename string, inputs []int) {
     defer f.Close()
     w := bufio.NewWriter(f)
     for _, line := range inputs {
-        content := strconv.Itoa(line) + "\r\n" 
+        content := line.String() + "\r\n" 
         fmt.Fprint(w, content)
     }
     w.Flush()
@@ -54,7 +61,7 @@ func product_tree() int{
 		level_filename := fmt.Sprintf("p%d.txt", level)
 		output_file(level_filename, inputs)
     	if len(inputs) == 1{
-    		inputs = []int{}
+    		inputs = []big.Int{}
     	} else{
             output_len := 0
             if len(inputs) % 2 == 1{
@@ -63,33 +70,35 @@ func product_tree() int{
                 output_len = len(inputs) / 2
             }
             var mutex = &sync.Mutex{}
-    		level_vec := [][]int{}
+    		level_vec := make(map[int]big.Int)
     		for i:= 0; i<len(inputs); i += 2 {
-    			go multiply(i, inputs, &level_vec, mutex)
+    			go multiply(i, inputs, level_vec, mutex)
     		}
             for len(level_vec) != output_len {
                 time.Sleep(100 * time.Nanosecond)
             }
-            inputs = make([]int, output_len)
+            inputs = make([]big.Int, output_len)
             for i := 0; i < output_len; i++{
-                inputs[level_vec[i][0]] = level_vec[i][1]
+                inputs[i] = level_vec[i]
             }
             level = level + 1
     	}
-	}
+    }
     fmt.Printf("time spent on product_tree = %d " , time.Since(start).Nanoseconds())
 	return level
 }
 
-func multiply(i int, inputs []int, level_vec *[][]int, mutex *sync.Mutex) {
-    var content []int
+func multiply(i int, inputs []big.Int, level_vec map[int]big.Int, mutex *sync.Mutex) {
+    var content big.Int
     if i+1 == len(inputs) {
-        content = []int{i/2, inputs[i]}
+        content = inputs[i]
     } else {
-        content = []int{i/2, inputs[i] * inputs[i+1]}
+        prod := new(big.Int)
+        prod.Mul(&inputs[i], &inputs[i+1])
+        content = *prod
     }
     mutex.Lock()
-    *level_vec = append(*level_vec, content)
+    level_vec[i/2] = content
     mutex.Unlock()  
 }
 
@@ -98,11 +107,19 @@ func remainder_tree(level int){
 	for level > 0 {
         level = level - 1;
         next_level := input_file(fmt.Sprintf("p%d.txt", level));
-        output_level := []int{}
+        output_level := []big.Int{}
         for i := 0; i < len(current_level); i++ {
-            output_level = append(output_level, current_level[i] % (next_level[2*i] * next_level[2*i]))
+            sq := new(big.Int)
+            sq.Mul(&next_level[2*i],&next_level[2*i])
+            mod := new(big.Int)
+            mod.Mod(&current_level[i], sq)
+            output_level = append(output_level, *mod)
             if 2*i + 1 != len(next_level) {
-                output_level = append(output_level, current_level[i] % (next_level[2*i + 1] * next_level[2*i + 1]))
+                sq2 := new(big.Int)
+                sq2.Mul(&next_level[2*i + 1],&next_level[2*i + 1])
+                mod2 := new(big.Int)
+                mod2.Mod(&current_level[i], sq2)
+                output_level = append(output_level, *mod2)
             }
         }
         level_filename := fmt.Sprintf("r%d.txt", level)
@@ -114,12 +131,18 @@ func remainder_tree(level int){
 func get_results() {
     input_nums:= input_file("p0.txt")
     modded_nums:= input_file("r0.txt")
-    results := []int{}
-    vulnerable := []int{}
+    results := []big.Int{}
+    vulnerable := []big.Int{}
     for i := 0; i < len(input_nums); i++ {
-        div_num := modded_nums[i]/input_nums[i]
-        gcd := GCD(div_num, input_nums[i])
-        if (gcd != 1) {
+        div_num := new(big.Int)
+        div_num.Div(&modded_nums[i], &input_nums[i])
+        gcd := GCD(*div_num, input_nums[i])
+        one := big.NewInt(1)
+        // log.Debug(one)
+        fmt.Print(one)
+        fmt.Print(*one)
+        // one.setInt(1)
+        if (one.Cmp(&gcd)!=0) {
             vulnerable = append(vulnerable, input_nums[i])
         }
         results = append(results, gcd)
@@ -128,9 +151,11 @@ func get_results() {
     output_file("results.txt", results)
 }
 
-func GCD(a, b int) int {
-    for b != 0 {
-        a, b = b, a%b
+func GCD(a, b big.Int) big.Int {
+    zero := big.NewInt(0)
+    mod := new(big.Int)
+    for (zero.Cmp(&b) != 0) {
+        a, b = b, *(mod.Mod(&a, &b))
     }
     return a
 }
