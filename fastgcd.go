@@ -1,14 +1,12 @@
 package main
 
-import (
-    "fmt"
-	"bufio"
-	"os"
-	// "strconv"
- 	"math/big"
-    // "time"
-    // "log"
-)
+import ("fmt"
+ 		"bufio"
+ 		"os"
+ 	    // "time"
+        "sync"
+        "math/big"
+        )
 
 func input_file (filename string, encoding int) []big.Int {
 	output := []big.Int{}
@@ -54,6 +52,7 @@ func output_file(level_filename string, inputs []big.Int) {
 func product_tree() int{
     // start := time.Now()
 	inputs := input_file("input2.txt", 16)
+
 	level := 0
 	for len(inputs) > 0 {
 		level_filename := fmt.Sprintf("p%d.txt", level)
@@ -61,6 +60,7 @@ func product_tree() int{
     	if len(inputs) == 1{
     		inputs = []big.Int{}
     	} else{
+
 		level_vec := []big.Int{}
 		for i:= 0; i<len(inputs); i += 2 {
 			if i+1 == len(inputs) {
@@ -76,7 +76,45 @@ func product_tree() int{
 		}
 	}
     // fmt.Printf("time spent on product_tree = %d " , time.Since(start).Nanoseconds())
+
+    //         output_len := 0
+    //         if len(inputs) % 2 == 1{
+    //             output_len = len(inputs) / 2 + 1
+    //         } else {
+    //             output_len = len(inputs) / 2
+    //         }
+    //         var mutex = &sync.Mutex{}
+    // 		level_vec := make(map[int]big.Int)
+    // 		for i:= 0; i<len(inputs); i += 2 {
+    // 			go multiply(i, inputs, level_vec, mutex)
+    // 		}
+    //         for len(level_vec) != output_len {
+    //             time.Sleep(100 * time.Nanosecond)
+    //         }
+    //         inputs = make([]big.Int, output_len)
+    //         for i := 0; i < output_len; i++{
+    //             inputs[i] = level_vec[i]
+    //         }
+    //         level = level + 1
+    // 	}
+    // }
+    // fmt.Printf("time spent on product_tree = %d " , time.Since(start).Nanoseconds())
+
 	return level
+}
+
+func multiply(i int, inputs []big.Int, level_vec map[int]big.Int, mutex *sync.Mutex) {
+    var content big.Int
+    if i+1 == len(inputs) {
+        content = inputs[i]
+    } else {
+        prod := new(big.Int)
+        prod.Mul(&inputs[i], &inputs[i+1])
+        content = *prod
+    }
+    mutex.Lock()
+    level_vec[i/2] = content
+    mutex.Unlock()  
 }
 
 func remainder_tree(level int){
