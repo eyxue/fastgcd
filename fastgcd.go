@@ -150,11 +150,17 @@ func get_results() {
     vulnerable := []big.Int{}
     for i := 0; i < len(input_nums); i++ {
         div_num := new(big.Int)
+        fmt.Printf("Mod num %d out of %d", i, len(input_nums))
+        fmt.Println(modded_nums[i])
         div_num.Div(&modded_nums[i], &input_nums[i])
         gcd := new(big.Int)
         gcd.GCD(nil, nil, div_num, &input_nums[i])
         one := big.NewInt(1)
+// <<<<<<< HEAD
         if (one.Cmp(gcd)!=0) {
+// =======
+//         if (one.Cmp(&gcd)!=0) {
+// >>>>>>> added some print statements
             vulnerable = append(vulnerable, input_nums[i])
         }
         results = append(results, *gcd)
