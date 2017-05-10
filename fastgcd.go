@@ -4,7 +4,8 @@ import ("fmt"
  		"bufio"
  		"os"
  		"strconv"
- 	
+ 	    "time"
+        "sync"
  		
 )
 
@@ -46,6 +47,7 @@ func output_file(level_filename string, inputs []int) {
 }
 
 func product_tree() int{
+    start := time.Now()
 	inputs := input_file("input.txt")
 	level := 0
 	for len(inputs) > 0 {
@@ -54,19 +56,41 @@ func product_tree() int{
     	if len(inputs) == 1{
     		inputs = []int{}
     	} else{
-		level_vec := []int{}
-		for i:= 0; i<len(inputs); i += 2 {
-			if i+1 == len(inputs) {
-				level_vec = append(level_vec, inputs[i])
-			} else {
-				level_vec = append(level_vec, inputs[i] * inputs[i+1])
-			}
-		}
-		inputs = level_vec
-		level = level + 1
-		}
+            output_len := 0
+            if len(inputs) % 2 == 1{
+                output_len = len(inputs) / 2 + 1
+            } else {
+                output_len = len(inputs) / 2
+            }
+            var mutex = &sync.Mutex{}
+    		level_vec := [][]int{}
+    		for i:= 0; i<len(inputs); i += 2 {
+    			go multiply(i, inputs, &level_vec, mutex)
+    		}
+            for len(level_vec) != output_len {
+                time.Sleep(100 * time.Nanosecond)
+            }
+            inputs = make([]int, output_len)
+            for i := 0; i < output_len; i++{
+                inputs[level_vec[i][0]] = level_vec[i][1]
+            }
+            level = level + 1
+    	}
 	}
+    fmt.Printf("time spent on product_tree = %d " , time.Since(start).Nanoseconds())
 	return level
+}
+
+func multiply(i int, inputs []int, level_vec *[][]int, mutex *sync.Mutex) {
+    var content []int
+    if i+1 == len(inputs) {
+        content = []int{i/2, inputs[i]}
+    } else {
+        content = []int{i/2, inputs[i] * inputs[i+1]}
+    }
+    mutex.Lock()
+    *level_vec = append(*level_vec, content)
+    mutex.Unlock()  
 }
 
 func remainder_tree(level int){
