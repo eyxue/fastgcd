@@ -7,6 +7,7 @@ import (
 	"sync"
     "io"
  	"math/big"
+    "time"
     // "log"
 )
 
@@ -85,8 +86,8 @@ func output_file(level_filename string, inputs []big.Int) {
 }
 
 func product_tree() int{
-    // start := time.Now()
-	inputs := input_file("input.moduli", 16)
+    start := time.Now()
+	inputs := input_file("input2.txt", 16)
     fmt.Println("product_tree");
 	level := 0
 	for len(inputs) > 0 {
@@ -110,7 +111,7 @@ func product_tree() int{
 		level = level + 1
 		}
 	}
-    // fmt.Printf("time spent on product_tree = %d " , time.Since(start).Nanoseconds())
+    fmt.Printf("time spent on product_tree = %d " , time.Since(start).Nanoseconds())
 
     //         output_len := 0
     //         if len(inputs) % 2 == 1{
@@ -187,7 +188,7 @@ func get_results() {
     vulnerable := []big.Int{}
     for i := 0; i < len(input_nums); i++ {
         div_num := new(big.Int)
-        fmt.Printf("Mod num %d out of %d", i, len(input_nums))
+        // fmt.Printf("Mod num %d out of %d", i, len(input_nums))
         div_num.Div(&modded_nums[i], &input_nums[i])
         gcd := new(big.Int)
         gcd.GCD(nil, nil, div_num, &input_nums[i])
