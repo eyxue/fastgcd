@@ -86,7 +86,8 @@ func output_file(level_filename string, inputs []big.Int) {
 }
 
 func product_tree() int{
-	inputs := input_file("input2.txt", 16)
+    // start := time.Now()
+	inputs := input_file("shorthexinput.txt", 16)
     fmt.Println("product_tree");
 	level := 0
 	for len(inputs) > 0 {
