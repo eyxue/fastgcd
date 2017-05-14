@@ -43,7 +43,7 @@ func input_file(filename string, encoding int) []*gmp.Int{
         // }
         line, isPrefix, err = r.ReadLine()
     }
-    fmt.Println("done")
+    // fmt.Println("done")
     return output
 }
 
@@ -60,12 +60,12 @@ func output_file(level_filename string, inputs []*gmp.Int) {
         fmt.Fprint(w, content)
     }
     w.Flush()
-    fmt.Println("done")
+    // fmt.Println("done")
 }
 
 func product_tree() int{
     // start := time.Now()
-	inputs := input_file("100000-hexinput.txt", 16)
+	inputs := input_file("../100000-hexinput.txt", 16)
 	level := 0
 	for len(inputs) > 0 {
 		level_filename := fmt.Sprintf("p%d.txt", level)
@@ -73,32 +73,43 @@ func product_tree() int{
     	if len(inputs) == 1 {
     		inputs = []*gmp.Int{}
         	} else {
-        		level_vec := []*gmp.Int{}
-        		for i:= 0; i<len(inputs); i += 2 {
-        			if i+1 == len(inputs) {
-        				level_vec = append(level_vec, inputs[i])
-        			} else {
-                        prod := new(gmp.Int)
-                        prod.Mul(inputs[i], inputs[i+1])
-        				level_vec = append(level_vec, prod)
-        			}
-    		}
-    		inputs = level_vec
-    		level = level + 1
+        		output_len := 0
+                if len(inputs) % 2 == 1{
+                    output_len = len(inputs) / 2 + 1
+                } else {
+                    output_len = len(inputs) / 2
+                }
+                var wg sync.WaitGroup
+                wg.Add(output_len)
+                var mutex = &sync.Mutex{}
+                level_vec := make(map[int]*gmp.Int)
+                for i:= 0; i<len(inputs); i += 2 {
+                    go multiply(i, inputs, level_vec, mutex, &wg)
+                }
+                wg.Wait()
+                output := []*gmp.Int{}
+                for i:= 0; i < len(level_vec); i++{
+                    output = append(output, level_vec[i])
+                }
+                inputs = output
+                // fmt.Println(len(inputs))
+                level = level + 1
 		}
 	}
-
 	return level
 }
 
-func multiply(i int, inputs []gmp.Int, level_vec map[int]gmp.Int, mutex *sync.Mutex) {
-    var content gmp.Int
+
+func multiply(i int, inputs []*gmp.Int , level_vec map[int]*gmp.Int, mutex *sync.Mutex, wg *sync.WaitGroup) {
+    defer wg.Done()
+    var content *gmp.Int
     if i+1 == len(inputs) {
         content = inputs[i]
     } else {
         prod := new(gmp.Int)
-        prod.Mul(&inputs[i], &inputs[i+1])
-        content = *prod
+        //content is pointer
+        prod.Mul(inputs[i], (inputs[i+1]))
+        content = prod
     }
     mutex.Lock()
     level_vec[i/2] = content
@@ -110,25 +121,38 @@ func remainder_tree(level int){
 	for level > 0 {
         level = level - 1;
         next_level := input_file(fmt.Sprintf("p%d.txt", level), 10);
-        output_level := []*gmp.Int{}
+        output_level := make(map[int]*gmp.Int) 
+        var mutex = &sync.Mutex{}
+        var wg sync.WaitGroup
+        wg.Add(len(next_level))
         for i := 0; i < len(current_level); i++ {
-            sq := new(gmp.Int)
-            sq.Mul(next_level[2*i],next_level[2*i])
-            mod := new(gmp.Int)
-            mod.Mod(current_level[i], sq)
-            output_level = append(output_level, mod)
+            go divide(2*i, next_level, current_level, output_level, mutex, &wg)
             if 2*i + 1 != len(next_level) {
-                sq2 := new(gmp.Int)
-                sq2.Mul(next_level[2*i + 1],next_level[2*i + 1])
-                mod2 := new(gmp.Int)
-                mod2.Mod(current_level[i], sq2)
-                output_level = append(output_level, mod2)
+                go divide(2*i+1, next_level, current_level, output_level, mutex, &wg)
             }
         }
+        wg.Wait()
+        array_result := []*gmp.Int{}
+        for i:= 0; i < len(output_level); i++{
+            array_result = append(array_result, output_level[i])
+        }
         level_filename := fmt.Sprintf("r%d.txt", level)
-        output_file(level_filename, output_level)
-        current_level = output_level
+        output_file(level_filename, array_result)
+        current_level = array_result
     }
+    // fmt.Printf("time spent on remainder_tree = %d " , time.Since(start).Nanoseconds())
+}
+
+func divide(index int, next_level []*gmp.Int, current_level []*gmp.Int, output_level map[int]*gmp.Int, mutex *sync.Mutex, wg *sync.WaitGroup) {
+    defer wg.Done()
+    sq := new(gmp.Int)
+    sq.Mul(next_level[index], next_level[index])
+    mod := new(gmp.Int)
+    mod.Mod(current_level[index/2], sq)
+    content := mod
+    mutex.Lock()
+    output_level[index] = content
+    mutex.Unlock() 
 }
 
 func get_results() {
