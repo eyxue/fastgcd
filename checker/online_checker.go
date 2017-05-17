@@ -38,27 +38,27 @@ func input_file(filename string, encoding int) []*gmp.Int{
     return output
 }
 
-func get_results(filename string, encoding int) {
+func get_results(filename string, encoding int) bool{
     vulnerable:= input_file("vulnerable.txt", 10)
     input_num:= input_file(filename, encoding)[0]
     one := gmp.NewInt(1)
 
     i := 0
-    output_mods := []*gmp.Int{}
 
-    for i < len(vulnerable_keys) {
+    for i < len(vulnerable) {
         gcd := new(gmp.Int)
-        gcd.GCD(nil, nil, vulnerable_keys[i], input_num)
+        gcd.GCD(nil, nil, vulnerable[i], input_num)
         if (one.Cmp(gcd)!=0) {
             return false
         }
+        i += 1
     }
     return true
 }
 
 func main() {
     start := time.Now()
-    if get_results("input.txt", 16){
+    if get_results("input.txt", 10){
         fmt.Println("Safe RSA Key")
     } else {
         fmt.Println("Weak RSA Key")
