@@ -9,6 +9,13 @@ import (
     "time"
 )
 
+//input_file reads from a file with the specified encoding
+//and returns an array of pointers, with each pointer
+//pointing to a gmp.Int containing the value of one line in the file
+
+//filename string - the name of the file to be read in
+//encoding int - the encoding representing the type of number in the file
+//               e.g. 10 is decimal, 16 is hexadecimal
 func input_file(filename string, encoding int) []*gmp.Int{
     fmt.Println("reading input file ", filename)
     output := []*gmp.Int{}
@@ -38,6 +45,15 @@ func input_file(filename string, encoding int) []*gmp.Int{
     return output
 }
 
+
+//get_results reads from a file containing the request key,
+//and checks the pairwise gcd with the known vulnerable keys
+//in vulnerable.txt, returns a boolean - false if the request
+//key shares prime with the known weak keys, true otherwise
+
+//filename string - the name of the file containing the request key
+//encoding int - the encoding representing the type of number in the file
+//               e.g. 10 is decimal, 16 is hexadecimal
 func get_results(filename string, encoding int) bool{
     vulnerable:= input_file("vulnerable.txt", 10)
     input_num:= input_file(filename, encoding)[0]
