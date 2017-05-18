@@ -10,5 +10,5 @@ To run the program, follow the following steps:
 6) to run the program on your own input, remember to put it in the same folder as fastgcd.go, and name it "input.txt". Note that the size of the file shouldn't exceed 500MB because that what eventually exceed the current GMP computation capacity
 
 we have also provided a key-check service, which checks whether a RSA key is vulnerable against our current dataset of vulnerable keys.
-To use that, cd into the checker file, and put your RSA key in the "input.txt" file, then build the program and run it.
+To use that, cd into the checker folder, and put your RSA key in the "input.txt" file, then build the program and run it.
 Of course, you are always welcome to expand the dataset of vulnerable keys by adding them to "vulnerable.txt"!
