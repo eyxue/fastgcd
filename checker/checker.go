@@ -75,9 +75,9 @@ func get_results(filename string, encoding int) bool{
 func main() {
     start := time.Now()
     if get_results("input.txt", 10){
-        fmt.Println("Safe RSA Key")
+        fmt.Println("It is a safe RSA Key")
     } else {
-        fmt.Println("Weak RSA Key")
+        fmt.Println("It is a weak RSA Key")
     }
-    fmt.Printf("runtime = %d " , time.Since(start).String())
+    fmt.Printf("runtime = %s " , time.Since(start).String())
 }
