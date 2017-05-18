@@ -1,7 +1,7 @@
 # fastgcd
-fastgcd is a go implementation of a a very fast bulk GCD computation for RSA key, which uses Bernstein's quasi-linear bulk GCD algorithm. If interested, you can find more details here: https://cr.yp.to/lineartime/multapps-20080515.pdf
+fastgcd is a go implementation of a a very fast bulk GCD computation for RSA keys, which uses Bernstein's quasi-linear bulk GCD algorithm. If interested, you can find more details here: https://cr.yp.to/lineartime/multapps-20080515.pdf
 
-To run the program, follow the following steps:
+To run the program:
 1) clone the repo
 2) make sure you have both go and gcc compiler installed on your device
 3) obtain the gmp library from here: https://github.com/ncw/gmp, and follow their instructions for setup
