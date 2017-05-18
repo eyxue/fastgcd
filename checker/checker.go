@@ -55,7 +55,7 @@ func input_file(filename string, encoding int) []*gmp.Int{
 //encoding int - the encoding representing the type of number in the file
 //               e.g. 10 is decimal, 16 is hexadecimal
 func get_results(filename string, encoding int) bool{
-    vulnerable:= input_file("vulnerable.txt", 10)
+    vulnerable:= input_file("weak_keys.txt", 10)
     input_num:= input_file(filename, encoding)[0]
     one := gmp.NewInt(1)
 
